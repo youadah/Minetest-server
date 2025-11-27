@@ -1,131 +1,82 @@
 # Minetest-server
-Installation d'un serveur Minetest sur LXC avec un dashboard interactif
-Présentation
+<div align="center">
+  
+# 🚀 LuantiServer
 
-Ce guide explique comment installer des serveurs Minetest sur des conteneurs LXC, ainsi que la mise en place d’un dashboard interactif pour gérer ces serveurs.
+**Solution complète d'hébergement et d'administration pour serveur Minecraft/Luanti avec sécurité renforcée**
 
-Installation de Minetest
-Prérequis
+[![Linux](https://img.shields.io/badge/Linux-Ubuntu-orange?logo=ubuntu)](https://ubuntu.com/)
+[![Security](https://img.shields.io/badge/Security-Hardened-green?logo=shieldsdotio)](https://github.com)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-Conteneurs LXC configurés (avec des adresses IP, etc.)
+[Fonctionnalités](#-fonctionnalités) • [Technologies](#-technologies) • [Installation](#-installation) • [Sécurité](#-sécurité) • [Contribution](#-contribution)
 
-Système Debian/Ubuntu sur les conteneurs
+</div>
 
-Étapes d'installation
+---
 
-Installation des paquets nécessaires
-Sur chaque conteneur, commencez par mettre à jour les dépôts et installer Minetest ainsi que les dépendances requises via APT :
+## 📋 À propos du projet
 
-apt update
-apt install minetest-server iptables iptables-persistent fail2ban
+**LuantiServer** est une plateforme d'hébergement et d'administration de serveur Minecraft/Luanti conçue pour offrir une expérience de jeu sécurisée, stable et facilement administrable. Le projet intègre une gestion multi-mondes, une interface web de monitoring et des mesures de cybersécurité avancées.
 
+L'objectif principal est de proposer une solution robuste pour héberger plusieurs mondes de jeu avec des configurations distinctes, tout en protégeant efficacement les joueurs contre les menaces courantes.
 
-Déplacement des fichiers de configuration
-Transférez les fichiers nécessaires dans les répertoires correspondants :
+---
 
-minetest.conf de chaque monde dans /etc/minetest/
+## ✨ Fonctionnalités
 
-world.mt dans /var/games/minetest-server/.minetest/worlds/world/
+### 🌍 Hébergement Multi-Mondes
+- **Vanilla** : Expérience Minecraft classique
+- **Créatif** : Mode construction illimitée
+- **Exploration** : Découverte d'environnements générés
+- **Survie** : Défi traditionnel de survie
+- **Monde personnalisé** : Configuration sur mesure
 
-sudoers dans /etc/
+Chaque monde dispose de sa propre configuration, permettant une personnalisation poussée des règles de jeu, des plugins et des paramètres serveur.
 
-Le fichier de jail et le filtre minetest-auth.conf dans /etc/fail2ban/
+### 🖥️ Interface Web Sécurisée
+- Dashboard de monitoring en temps réel
+- Statistiques détaillées par monde (joueurs connectés, performances, utilisation ressources)
+- Supervision de l'état de santé du serveur et des services
+- Accès sécurisé via SSL/TLS
 
-Les fichiers index de Dashboard et Web dans /var/www/
+### 🤖 Scripting & Automatisation
+- Scripts Bash et Python pour l'administration simplifiée
+- Gestion automatisée des backups
+- Démarrage/arrêt des mondes
+- Maintenance et mises à jour facilitées
 
-Définir les permissions
-Assurez-vous que les permissions sont correctement définies pour les répertoires et fichiers :
+### 🔒 Cybersécurité Renforcée
+- Protection contre les attaques par force brute sur les comptes joueurs
+- Durcissement de la configuration système
+- Surveillance et limitation des tentatives d'authentification
+- Gestion des accès et des permissions
+- Logs centralisés et monitoring de sécurité
 
-chown -R Debian-minetest:games /etc/minetest
-chown -R Debian-minetest:games /usr/share/games/minetest
-chown -R Debian-minetest:games /var/games/minetest-server
+---
 
+## 🛠️ Technologies
 
-Redémarrer le service Minetest
-Pour appliquer la configuration, redémarrez le serveur Minetest :
+| Catégorie | Technologies |
+|-----------|--------------|
+| **Serveur de jeu** | Minecraft Server, Luanti |
+| **Système d'exploitation** | Linux (Ubuntu Server) |
+| **Scripting** | Bash, Python 3 |
+| **Sécurité** | SSL/TLS, Fail2ban, UFW |
+| **Web** | NGINX, Dashboard web custom |
+| **Monitoring** | Scripts de supervision personnalisés |
 
-systemctl restart minetest-server
+---
 
-Configuration du DNAT
+## 🚀 Installation
 
-Pour rendre les cartes accessibles depuis l’extérieur, configurez les règles DNAT sur le serveur principal, en redirigeant les ports vers chaque conteneur. Exemple :
+### Prérequis
 
-iptables -A PREROUTING -t nat -p udp --dport 30000 -j DNAT --to-destination 10.0.3.10:30000
-iptables -A PREROUTING -t nat -p udp --dport 30001 -j DNAT --to-destination 10.0.3.15:30000
+- Ubuntu Server 20.04+ (ou distribution Linux compatible)
+- Python 3.8+
+- Accès root ou sudo
+- Ports 25565 (Minecraft) et 443 (HTTPS) disponibles
 
-
-Note : Adaptez l'adresse IP et le port selon votre configuration.
-
-Installation du Dashboard
-
-Installation d'Apache et PHP
-
-Sur le serveur principal, installez Apache et PHP pour faire tourner le dashboard :
-
-apt update
-apt install apache2 php php-cli php-common libapache2-mod-php
-
-
-Configuration du Dashboard
-
-Modifiez la configuration d’Apache dans /etc/apache2/sites-available/000-default.conf pour définir le répertoire racine du serveur Web où se trouve votre dashboard, comme suit :
-
-DocumentRoot /var/www/minetest
-
-
-Ensuite, définissez les bonnes permissions pour le répertoire :
-
-chown -R www-data:www-data /var/www/minetest
-
-
-Redémarrez Apache pour appliquer les modifications :
-
-systemctl restart apache2
+### Étapes d'installation
 
 
-Si vous avez également un fichier index.html dans un sous-répertoire "Web", appliquez la même procédure de permission.
-
-Personnalisation
-
-Modifiez les fichiers index.php et index.html du dashboard selon vos besoins pour personnaliser l'interface utilisateur.
-
-Installation des Scripts
-
-Déplacement des scripts
-Déplacez les scripts .sh dans le répertoire /usr/bin/.
-
-Déplacement des fichiers de service systemd
-Déplacez les fichiers .service dans /etc/systemd/system/.
-
-Recharger systemd
-Rechargez les fichiers de configuration de systemd :
-
-systemctl daemon-reload
-
-
-Appliquer les droits d’exécution
-Assurez-vous que l'utilisateur www-data (l’utilisateur sous lequel Apache fonctionne) a les droits d'exécution sur les scripts :
-
-chmod +x /usr/bin/vos_scripts.sh
-
-Informations importantes
-
-Ce dashboard est compatible avec les distributions utilisant :
-
-LXC (Linux Containers)
-
-Apache2
-
-PHP
-
-Contributions
-
-Les contributions sont les bienvenues ! Vous pouvez :
-
-Modifier et améliorer le code
-
-Proposer des mises à jour
-
-Signaler un problème via une issue
-
-Soumettre une pull request pour vos améliorations
